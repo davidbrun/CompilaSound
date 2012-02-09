@@ -1,0 +1,66 @@
+package calculator;
+
+import java.util.TreeMap;
+import java.util.Map;
+
+parser code {:
+    
+    public void report_error(String message, Object info) {
+        StringBuffer m = new StringBuffer("Error");
+		m.append (info.toString());
+        m.append(" : "+message);
+        System.err.println(m.toString());
+    }
+   
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+
+	private Map<String, Integer> values = new TreeMap<String, Integer> ();
+
+	public void setValue (String name, int value) {
+		values.put(name, new Integer (value));
+	}
+	
+	public int getValue (String name) {
+		int value = 0;
+		if (values.containsKey(name))
+			value = values.get(name).intValue();
+		return value;
+	}
+
+:}
+
+terminal			EQUAL;
+terminal			PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN;
+terminal			EOLN;
+terminal Integer	NUMBER;
+terminal String		ID;
+terminal			UPLUS, UMINUS;
+   
+nonterminal 		list, instr;
+nonterminal Integer expr;
+
+precedence left		PLUS, MINUS;
+precedence left		TIMES, DIVIDE;
+precedence right	UPLUS, UMINUS;
+
+list	::=	
+		|	list instr EOLN
+		;
+
+instr	::=	ID:n EQUAL expr:e		{: setValue (n, e); :}
+		|	expr:e					{: System.out.println (e); :}
+		;
+
+expr	::=	expr:e1	PLUS	expr:e2	{: RESULT = e1 + e2; :}
+		|	expr:e1	MINUS	expr:e2	{: RESULT = e1 - e2; :}
+		|	expr:e1	TIMES	expr:e2	{: RESULT = e1 * e2; :}
+		|	expr:e1	DIVIDE	expr:e2	{: RESULT = e1 / e2; :}
+		|	MINUS	expr:e			{: RESULT = - e; :} %prec UMINUS
+		|	PLUS	expr:e			{: RESULT = + e; :} %prec UPLUS
+		|	LPAREN	expr:e	RPAREN	{: RESULT = e; :}
+		|	NUMBER:n				{: RESULT = n; :}
+		|	ID:n					{: RESULT = getValue(n); :}
+		;
