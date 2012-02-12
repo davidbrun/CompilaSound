@@ -1,7 +1,7 @@
 
 %%
    
-%package calculator
+%package fr.uha.ensisa.compil.sound
 %class Lexer
 %line
 %column
