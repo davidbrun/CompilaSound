@@ -20,6 +20,9 @@ public class SoundMidi extends AbstractSound {
 	
 	public SoundMidi(String instrumentName, List<String> listNotes) {
 		try {
+			SoundMidi.velocity = VELOCITY;
+			SoundMidi.duration = DURATION;
+			
 			this.synthesizer = MidiSystem.getSynthesizer();
 			this.synthesizer.open();
 			
@@ -50,10 +53,10 @@ public class SoundMidi extends AbstractSound {
 		for (Integer note : this.listNotes)
 		{
 			if (note != EMPTY_SOUND)
-				channel.noteOn(note, VELOCITY);
+				channel.noteOn(note, SoundMidi.velocity);
 			
 			try {
-				Thread.sleep(DURATION);
+				Thread.sleep(SoundMidi.duration);
 			} catch (Exception e) { }
 			
 			if (note != EMPTY_SOUND)
@@ -69,7 +72,7 @@ public class SoundMidi extends AbstractSound {
 	
 	@Override
 	public double getSoundDuration() {
-		return (DURATION / 1000.0) * this.listNotes.size();
+		return (SoundMidi.duration / 1000.0) * this.listNotes.size();
 	}
 	
 	private static final int[] offsets = { // add these amounts to the base value

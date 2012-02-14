@@ -3,10 +3,10 @@
 ===== STDOUT =====
 
 ===== Terminals =====
-[0]EOF [1]error [2]TERM [3]EQUAL [4]LOAD 
-[5]IMPORT [6]PLAY [7]PLAY_SIMULT [8]WITH_NOTES [9]SEQUENCE 
-[10]REPEAT [11]TIMES [12]END [13]NUMBER [14]STRING 
-[15]NOTE [16]VARIABLE 
+[0]EOF [1]error [2]TERM [3]EQUAL [4]NOTE_DURATION 
+[5]NOTE_VELOCITY [6]LOAD [7]IMPORT [8]PLAY [9]PLAY_SIMULT 
+[10]WITH_NOTES [11]SEQUENCE [12]REPEAT [13]TIMES [14]END 
+[15]NUMBER [16]STRING [17]NOTE [18]VARIABLE 
 
 ===== Non terminals =====
 [0]Instructions [1]Instruction [2]SoundList [3]NoteList [4]Expr 
@@ -20,301 +20,333 @@
 [4] Instruction ::= PLAY Expr 
 [5] Instruction ::= PLAY_SIMULT SoundList END 
 [6] Instruction ::= VARIABLE EQUAL Expr 
-[7] SoundList ::= 
-[8] SoundList ::= SoundList Expr TERM 
-[9] NoteList ::= 
-[10] NoteList ::= NoteList Note TERM 
-[11] Expr ::= LOAD Str WITH_NOTES NoteList END 
-[12] Expr ::= IMPORT Str 
-[13] Expr ::= REPEAT Int TIMES SoundList END 
-[14] Expr ::= SEQUENCE SoundList END 
-[15] Expr ::= VARIABLE 
-[16] Int ::= NUMBER 
-[17] Str ::= STRING 
-[18] Note ::= NOTE 
+[7] Instruction ::= NOTE_DURATION Int 
+[8] Instruction ::= NOTE_VELOCITY Int 
+[9] SoundList ::= 
+[10] SoundList ::= SoundList Expr TERM 
+[11] NoteList ::= 
+[12] NoteList ::= NoteList Note TERM 
+[13] Expr ::= LOAD Str WITH_NOTES NoteList END 
+[14] Expr ::= IMPORT Str 
+[15] Expr ::= REPEAT Int TIMES SoundList END 
+[16] Expr ::= SEQUENCE SoundList END 
+[17] Expr ::= VARIABLE 
+[18] Int ::= NUMBER 
+[19] Str ::= STRING 
+[20] Note ::= NOTE 
 ===== Viable Prefix Recognizer =====
 START lalr_state [0]: {
-  [Instructions ::= (*) Instructions Instruction TERM , {EOF TERM PLAY PLAY_SIMULT VARIABLE }]
+  [Instructions ::= (*) Instructions Instruction TERM , {EOF TERM NOTE_DURATION NOTE_VELOCITY PLAY PLAY_SIMULT VARIABLE }]
   [$START ::= (*) Instructions EOF , {EOF }]
-  [Instructions ::= (*) , {EOF TERM PLAY PLAY_SIMULT VARIABLE }]
+  [Instructions ::= (*) , {EOF TERM NOTE_DURATION NOTE_VELOCITY PLAY PLAY_SIMULT VARIABLE }]
 }
 transition on Instructions to state [1]
 
 -------------------
 lalr_state [1]: {
+  [Instruction ::= (*) NOTE_VELOCITY Int , {TERM }]
   [Instruction ::= (*) PLAY_SIMULT SoundList END , {TERM }]
-  [Instructions ::= Instructions (*) Instruction TERM , {EOF TERM PLAY PLAY_SIMULT VARIABLE }]
+  [Instructions ::= Instructions (*) Instruction TERM , {EOF TERM NOTE_DURATION NOTE_VELOCITY PLAY PLAY_SIMULT VARIABLE }]
+  [Instruction ::= (*) NOTE_DURATION Int , {TERM }]
   [Instruction ::= (*) PLAY Expr , {TERM }]
   [$START ::= Instructions (*) EOF , {EOF }]
   [Instruction ::= (*) VARIABLE EQUAL Expr , {TERM }]
   [Instruction ::= (*) , {TERM }]
 }
-transition on VARIABLE to state [6]
-transition on PLAY_SIMULT to state [5]
-transition on EOF to state [4]
-transition on Instruction to state [3]
+transition on VARIABLE to state [8]
+transition on PLAY_SIMULT to state [7]
+transition on EOF to state [6]
+transition on NOTE_VELOCITY to state [5]
+transition on Instruction to state [4]
+transition on NOTE_DURATION to state [3]
 transition on PLAY to state [2]
 
 -------------------
 lalr_state [2]: {
-  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
-  [Instruction ::= PLAY (*) Expr , {TERM }]
-  [Expr ::= (*) VARIABLE , {TERM }]
-  [Expr ::= (*) IMPORT Str , {TERM }]
   [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
   [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
+  [Instruction ::= PLAY (*) Expr , {TERM }]
+  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
+  [Expr ::= (*) VARIABLE , {TERM }]
+  [Expr ::= (*) IMPORT Str , {TERM }]
 }
-transition on VARIABLE to state [13]
-transition on REPEAT to state [12]
-transition on SEQUENCE to state [11]
-transition on Expr to state [35]
-transition on IMPORT to state [9]
-transition on LOAD to state [8]
+transition on VARIABLE to state [15]
+transition on SEQUENCE to state [14]
+transition on REPEAT to state [13]
+transition on Expr to state [39]
+transition on IMPORT to state [11]
+transition on LOAD to state [10]
 
 -------------------
 lalr_state [3]: {
-  [Instructions ::= Instructions Instruction (*) TERM , {EOF TERM PLAY PLAY_SIMULT VARIABLE }]
+  [Instruction ::= NOTE_DURATION (*) Int , {TERM }]
+  [Int ::= (*) NUMBER , {TERM }]
 }
-transition on TERM to state [34]
+transition on Int to state [38]
+transition on NUMBER to state [20]
 
 -------------------
 lalr_state [4]: {
+  [Instructions ::= Instructions Instruction (*) TERM , {EOF TERM NOTE_DURATION NOTE_VELOCITY PLAY PLAY_SIMULT VARIABLE }]
+}
+transition on TERM to state [37]
+
+-------------------
+lalr_state [5]: {
+  [Int ::= (*) NUMBER , {TERM }]
+  [Instruction ::= NOTE_VELOCITY (*) Int , {TERM }]
+}
+transition on Int to state [36]
+transition on NUMBER to state [20]
+
+-------------------
+lalr_state [6]: {
   [$START ::= Instructions EOF (*) , {EOF }]
 }
 
 -------------------
-lalr_state [5]: {
-  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+lalr_state [7]: {
   [Instruction ::= PLAY_SIMULT (*) SoundList END , {TERM }]
+  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
   [SoundList ::= (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
 }
-transition on SoundList to state [32]
-
--------------------
-lalr_state [6]: {
-  [Instruction ::= VARIABLE (*) EQUAL Expr , {TERM }]
-}
-transition on EQUAL to state [7]
-
--------------------
-lalr_state [7]: {
-  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
-  [Expr ::= (*) VARIABLE , {TERM }]
-  [Expr ::= (*) IMPORT Str , {TERM }]
-  [Instruction ::= VARIABLE EQUAL (*) Expr , {TERM }]
-  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
-  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
-}
-transition on VARIABLE to state [13]
-transition on REPEAT to state [12]
-transition on SEQUENCE to state [11]
-transition on Expr to state [10]
-transition on IMPORT to state [9]
-transition on LOAD to state [8]
+transition on SoundList to state [34]
 
 -------------------
 lalr_state [8]: {
-  [Str ::= (*) STRING , {WITH_NOTES }]
-  [Expr ::= LOAD (*) Str WITH_NOTES NoteList END , {TERM }]
+  [Instruction ::= VARIABLE (*) EQUAL Expr , {TERM }]
 }
-transition on Str to state [25]
-transition on STRING to state [23]
+transition on EQUAL to state [9]
 
 -------------------
 lalr_state [9]: {
-  [Expr ::= IMPORT (*) Str , {TERM }]
-  [Str ::= (*) STRING , {TERM }]
+  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
+  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
+  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
+  [Instruction ::= VARIABLE EQUAL (*) Expr , {TERM }]
+  [Expr ::= (*) VARIABLE , {TERM }]
+  [Expr ::= (*) IMPORT Str , {TERM }]
 }
-transition on Str to state [24]
-transition on STRING to state [23]
+transition on VARIABLE to state [15]
+transition on SEQUENCE to state [14]
+transition on REPEAT to state [13]
+transition on Expr to state [12]
+transition on IMPORT to state [11]
+transition on LOAD to state [10]
 
 -------------------
 lalr_state [10]: {
+  [Str ::= (*) STRING , {WITH_NOTES }]
+  [Expr ::= LOAD (*) Str WITH_NOTES NoteList END , {TERM }]
+}
+transition on Str to state [27]
+transition on STRING to state [25]
+
+-------------------
+lalr_state [11]: {
+  [Str ::= (*) STRING , {TERM }]
+  [Expr ::= IMPORT (*) Str , {TERM }]
+}
+transition on Str to state [26]
+transition on STRING to state [25]
+
+-------------------
+lalr_state [12]: {
   [Instruction ::= VARIABLE EQUAL Expr (*) , {TERM }]
 }
 
 -------------------
-lalr_state [11]: {
-  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-  [SoundList ::= (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-  [Expr ::= SEQUENCE (*) SoundList END , {TERM }]
-}
-transition on SoundList to state [21]
-
--------------------
-lalr_state [12]: {
+lalr_state [13]: {
   [Int ::= (*) NUMBER , {TIMES }]
   [Expr ::= REPEAT (*) Int TIMES SoundList END , {TERM }]
 }
-transition on Int to state [15]
-transition on NUMBER to state [14]
+transition on Int to state [21]
+transition on NUMBER to state [20]
 
 -------------------
-lalr_state [13]: {
+lalr_state [14]: {
+  [Expr ::= SEQUENCE (*) SoundList END , {TERM }]
+  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+  [SoundList ::= (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+}
+transition on SoundList to state [16]
+
+-------------------
+lalr_state [15]: {
   [Expr ::= VARIABLE (*) , {TERM }]
 }
 
 -------------------
-lalr_state [14]: {
-  [Int ::= NUMBER (*) , {TIMES }]
-}
-
--------------------
-lalr_state [15]: {
-  [Expr ::= REPEAT Int (*) TIMES SoundList END , {TERM }]
-}
-transition on TIMES to state [16]
-
--------------------
 lalr_state [16]: {
-  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-  [SoundList ::= (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-  [Expr ::= REPEAT Int TIMES (*) SoundList END , {TERM }]
-}
-transition on SoundList to state [17]
-
--------------------
-lalr_state [17]: {
-  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
-  [Expr ::= (*) VARIABLE , {TERM }]
-  [Expr ::= (*) IMPORT Str , {TERM }]
   [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
-  [Expr ::= REPEAT Int TIMES SoundList (*) END , {TERM }]
   [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
   [SoundList ::= SoundList (*) Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-}
-transition on VARIABLE to state [13]
-transition on END to state [19]
-transition on REPEAT to state [12]
-transition on SEQUENCE to state [11]
-transition on Expr to state [18]
-transition on IMPORT to state [9]
-transition on LOAD to state [8]
-
--------------------
-lalr_state [18]: {
-  [SoundList ::= SoundList Expr (*) TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-}
-transition on TERM to state [20]
-
--------------------
-lalr_state [19]: {
-  [Expr ::= REPEAT Int TIMES SoundList END (*) , {TERM }]
-}
-
--------------------
-lalr_state [20]: {
-  [SoundList ::= SoundList Expr TERM (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
-}
-
--------------------
-lalr_state [21]: {
   [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
   [Expr ::= (*) VARIABLE , {TERM }]
   [Expr ::= (*) IMPORT Str , {TERM }]
   [Expr ::= SEQUENCE SoundList (*) END , {TERM }]
-  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
-  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
-  [SoundList ::= SoundList (*) Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
 }
-transition on VARIABLE to state [13]
-transition on END to state [22]
-transition on REPEAT to state [12]
-transition on SEQUENCE to state [11]
-transition on Expr to state [18]
-transition on IMPORT to state [9]
-transition on LOAD to state [8]
+transition on VARIABLE to state [15]
+transition on END to state [18]
+transition on SEQUENCE to state [14]
+transition on REPEAT to state [13]
+transition on Expr to state [17]
+transition on IMPORT to state [11]
+transition on LOAD to state [10]
 
 -------------------
-lalr_state [22]: {
+lalr_state [17]: {
+  [SoundList ::= SoundList Expr (*) TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+}
+transition on TERM to state [19]
+
+-------------------
+lalr_state [18]: {
   [Expr ::= SEQUENCE SoundList END (*) , {TERM }]
 }
 
 -------------------
-lalr_state [23]: {
-  [Str ::= STRING (*) , {TERM WITH_NOTES }]
+lalr_state [19]: {
+  [SoundList ::= SoundList Expr TERM (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
 }
 
 -------------------
+lalr_state [20]: {
+  [Int ::= NUMBER (*) , {TERM TIMES }]
+}
+
+-------------------
+lalr_state [21]: {
+  [Expr ::= REPEAT Int (*) TIMES SoundList END , {TERM }]
+}
+transition on TIMES to state [22]
+
+-------------------
+lalr_state [22]: {
+  [Expr ::= REPEAT Int TIMES (*) SoundList END , {TERM }]
+  [SoundList ::= (*) SoundList Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+  [SoundList ::= (*) , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+}
+transition on SoundList to state [23]
+
+-------------------
+lalr_state [23]: {
+  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
+  [Expr ::= REPEAT Int TIMES SoundList (*) END , {TERM }]
+  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
+  [SoundList ::= SoundList (*) Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
+  [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
+  [Expr ::= (*) VARIABLE , {TERM }]
+  [Expr ::= (*) IMPORT Str , {TERM }]
+}
+transition on VARIABLE to state [15]
+transition on END to state [24]
+transition on SEQUENCE to state [14]
+transition on REPEAT to state [13]
+transition on Expr to state [17]
+transition on IMPORT to state [11]
+transition on LOAD to state [10]
+
+-------------------
 lalr_state [24]: {
-  [Expr ::= IMPORT Str (*) , {TERM }]
+  [Expr ::= REPEAT Int TIMES SoundList END (*) , {TERM }]
 }
 
 -------------------
 lalr_state [25]: {
-  [Expr ::= LOAD Str (*) WITH_NOTES NoteList END , {TERM }]
+  [Str ::= STRING (*) , {TERM WITH_NOTES }]
 }
-transition on WITH_NOTES to state [26]
 
 -------------------
 lalr_state [26]: {
+  [Expr ::= IMPORT Str (*) , {TERM }]
+}
+
+-------------------
+lalr_state [27]: {
+  [Expr ::= LOAD Str (*) WITH_NOTES NoteList END , {TERM }]
+}
+transition on WITH_NOTES to state [28]
+
+-------------------
+lalr_state [28]: {
   [NoteList ::= (*) NoteList Note TERM , {END NOTE }]
   [NoteList ::= (*) , {END NOTE }]
   [Expr ::= LOAD Str WITH_NOTES (*) NoteList END , {TERM }]
 }
-transition on NoteList to state [27]
+transition on NoteList to state [29]
 
 -------------------
-lalr_state [27]: {
+lalr_state [29]: {
   [NoteList ::= NoteList (*) Note TERM , {END NOTE }]
   [Note ::= (*) NOTE , {TERM }]
   [Expr ::= LOAD Str WITH_NOTES NoteList (*) END , {TERM }]
 }
-transition on NOTE to state [30]
-transition on END to state [29]
-transition on Note to state [28]
+transition on NOTE to state [32]
+transition on END to state [31]
+transition on Note to state [30]
 
 -------------------
-lalr_state [28]: {
+lalr_state [30]: {
   [NoteList ::= NoteList Note (*) TERM , {END NOTE }]
 }
-transition on TERM to state [31]
+transition on TERM to state [33]
 
 -------------------
-lalr_state [29]: {
+lalr_state [31]: {
   [Expr ::= LOAD Str WITH_NOTES NoteList END (*) , {TERM }]
 }
 
 -------------------
-lalr_state [30]: {
+lalr_state [32]: {
   [Note ::= NOTE (*) , {TERM }]
 }
 
 -------------------
-lalr_state [31]: {
+lalr_state [33]: {
   [NoteList ::= NoteList Note TERM (*) , {END NOTE }]
 }
 
 -------------------
-lalr_state [32]: {
+lalr_state [34]: {
+  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
+  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
+  [SoundList ::= SoundList (*) Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
   [Expr ::= (*) REPEAT Int TIMES SoundList END , {TERM }]
   [Expr ::= (*) VARIABLE , {TERM }]
   [Expr ::= (*) IMPORT Str , {TERM }]
-  [Expr ::= (*) SEQUENCE SoundList END , {TERM }]
-  [Expr ::= (*) LOAD Str WITH_NOTES NoteList END , {TERM }]
   [Instruction ::= PLAY_SIMULT SoundList (*) END , {TERM }]
-  [SoundList ::= SoundList (*) Expr TERM , {LOAD IMPORT SEQUENCE REPEAT END VARIABLE }]
 }
-transition on VARIABLE to state [13]
-transition on END to state [33]
-transition on REPEAT to state [12]
-transition on SEQUENCE to state [11]
-transition on Expr to state [18]
-transition on IMPORT to state [9]
-transition on LOAD to state [8]
+transition on VARIABLE to state [15]
+transition on END to state [35]
+transition on SEQUENCE to state [14]
+transition on REPEAT to state [13]
+transition on Expr to state [17]
+transition on IMPORT to state [11]
+transition on LOAD to state [10]
 
 -------------------
-lalr_state [33]: {
+lalr_state [35]: {
   [Instruction ::= PLAY_SIMULT SoundList END (*) , {TERM }]
 }
 
 -------------------
-lalr_state [34]: {
-  [Instructions ::= Instructions Instruction TERM (*) , {EOF TERM PLAY PLAY_SIMULT VARIABLE }]
+lalr_state [36]: {
+  [Instruction ::= NOTE_VELOCITY Int (*) , {TERM }]
 }
 
 -------------------
-lalr_state [35]: {
+lalr_state [37]: {
+  [Instructions ::= Instructions Instruction TERM (*) , {EOF TERM NOTE_DURATION NOTE_VELOCITY PLAY PLAY_SIMULT VARIABLE }]
+}
+
+-------------------
+lalr_state [38]: {
+  [Instruction ::= NOTE_DURATION Int (*) , {TERM }]
+}
+
+-------------------
+lalr_state [39]: {
   [Instruction ::= PLAY Expr (*) , {TERM }]
 }
 
@@ -322,151 +354,168 @@ lalr_state [35]: {
 -------- ACTION_TABLE --------
 From state #0
  [term 0:REDUCE(with prod 0)] [term 2:REDUCE(with prod 0)]
- [term 6:REDUCE(with prod 0)] [term 7:REDUCE(with prod 0)]
- [term 16:REDUCE(with prod 0)]
+ [term 4:REDUCE(with prod 0)] [term 5:REDUCE(with prod 0)]
+ [term 8:REDUCE(with prod 0)] [term 9:REDUCE(with prod 0)]
+ [term 18:REDUCE(with prod 0)]
 From state #1
- [term 0:SHIFT(to state 4)] [term 2:REDUCE(with prod 3)]
- [term 6:SHIFT(to state 2)] [term 7:SHIFT(to state 5)]
- [term 16:SHIFT(to state 6)]
+ [term 0:SHIFT(to state 6)] [term 2:REDUCE(with prod 3)]
+ [term 4:SHIFT(to state 3)] [term 5:SHIFT(to state 5)]
+ [term 8:SHIFT(to state 2)] [term 9:SHIFT(to state 7)]
+ [term 18:SHIFT(to state 8)]
 From state #2
- [term 4:SHIFT(to state 8)] [term 5:SHIFT(to state 9)]
- [term 9:SHIFT(to state 11)] [term 10:SHIFT(to state 12)]
- [term 16:SHIFT(to state 13)]
+ [term 6:SHIFT(to state 10)] [term 7:SHIFT(to state 11)]
+ [term 11:SHIFT(to state 14)] [term 12:SHIFT(to state 13)]
+ [term 18:SHIFT(to state 15)]
 From state #3
- [term 2:SHIFT(to state 34)]
+ [term 15:SHIFT(to state 20)]
 From state #4
- [term 0:REDUCE(with prod 1)]
+ [term 2:SHIFT(to state 37)]
 From state #5
- [term 4:REDUCE(with prod 7)] [term 5:REDUCE(with prod 7)]
- [term 9:REDUCE(with prod 7)] [term 10:REDUCE(with prod 7)]
- [term 12:REDUCE(with prod 7)] [term 16:REDUCE(with prod 7)]
+ [term 15:SHIFT(to state 20)]
 From state #6
- [term 3:SHIFT(to state 7)]
+ [term 0:REDUCE(with prod 1)]
 From state #7
- [term 4:SHIFT(to state 8)] [term 5:SHIFT(to state 9)]
- [term 9:SHIFT(to state 11)] [term 10:SHIFT(to state 12)]
- [term 16:SHIFT(to state 13)]
+ [term 6:REDUCE(with prod 9)] [term 7:REDUCE(with prod 9)]
+ [term 11:REDUCE(with prod 9)] [term 12:REDUCE(with prod 9)]
+ [term 14:REDUCE(with prod 9)] [term 18:REDUCE(with prod 9)]
 From state #8
- [term 14:SHIFT(to state 23)]
+ [term 3:SHIFT(to state 9)]
 From state #9
- [term 14:SHIFT(to state 23)]
+ [term 6:SHIFT(to state 10)] [term 7:SHIFT(to state 11)]
+ [term 11:SHIFT(to state 14)] [term 12:SHIFT(to state 13)]
+ [term 18:SHIFT(to state 15)]
 From state #10
- [term 2:REDUCE(with prod 6)]
+ [term 16:SHIFT(to state 25)]
 From state #11
- [term 4:REDUCE(with prod 7)] [term 5:REDUCE(with prod 7)]
- [term 9:REDUCE(with prod 7)] [term 10:REDUCE(with prod 7)]
- [term 12:REDUCE(with prod 7)] [term 16:REDUCE(with prod 7)]
+ [term 16:SHIFT(to state 25)]
 From state #12
- [term 13:SHIFT(to state 14)]
+ [term 2:REDUCE(with prod 6)]
 From state #13
- [term 2:REDUCE(with prod 15)]
+ [term 15:SHIFT(to state 20)]
 From state #14
- [term 11:REDUCE(with prod 16)]
+ [term 6:REDUCE(with prod 9)] [term 7:REDUCE(with prod 9)]
+ [term 11:REDUCE(with prod 9)] [term 12:REDUCE(with prod 9)]
+ [term 14:REDUCE(with prod 9)] [term 18:REDUCE(with prod 9)]
 From state #15
- [term 11:SHIFT(to state 16)]
+ [term 2:REDUCE(with prod 17)]
 From state #16
- [term 4:REDUCE(with prod 7)] [term 5:REDUCE(with prod 7)]
- [term 9:REDUCE(with prod 7)] [term 10:REDUCE(with prod 7)]
- [term 12:REDUCE(with prod 7)] [term 16:REDUCE(with prod 7)]
+ [term 6:SHIFT(to state 10)] [term 7:SHIFT(to state 11)]
+ [term 11:SHIFT(to state 14)] [term 12:SHIFT(to state 13)]
+ [term 14:SHIFT(to state 18)] [term 18:SHIFT(to state 15)]
 From state #17
- [term 4:SHIFT(to state 8)] [term 5:SHIFT(to state 9)]
- [term 9:SHIFT(to state 11)] [term 10:SHIFT(to state 12)]
- [term 12:SHIFT(to state 19)] [term 16:SHIFT(to state 13)]
+ [term 2:SHIFT(to state 19)]
 From state #18
- [term 2:SHIFT(to state 20)]
+ [term 2:REDUCE(with prod 16)]
 From state #19
- [term 2:REDUCE(with prod 13)]
+ [term 6:REDUCE(with prod 10)] [term 7:REDUCE(with prod 10)]
+ [term 11:REDUCE(with prod 10)] [term 12:REDUCE(with prod 10)]
+ [term 14:REDUCE(with prod 10)] [term 18:REDUCE(with prod 10)]
 From state #20
- [term 4:REDUCE(with prod 8)] [term 5:REDUCE(with prod 8)]
- [term 9:REDUCE(with prod 8)] [term 10:REDUCE(with prod 8)]
- [term 12:REDUCE(with prod 8)] [term 16:REDUCE(with prod 8)]
+ [term 2:REDUCE(with prod 18)] [term 13:REDUCE(with prod 18)]
 From state #21
- [term 4:SHIFT(to state 8)] [term 5:SHIFT(to state 9)]
- [term 9:SHIFT(to state 11)] [term 10:SHIFT(to state 12)]
- [term 12:SHIFT(to state 22)] [term 16:SHIFT(to state 13)]
+ [term 13:SHIFT(to state 22)]
 From state #22
- [term 2:REDUCE(with prod 14)]
+ [term 6:REDUCE(with prod 9)] [term 7:REDUCE(with prod 9)]
+ [term 11:REDUCE(with prod 9)] [term 12:REDUCE(with prod 9)]
+ [term 14:REDUCE(with prod 9)] [term 18:REDUCE(with prod 9)]
 From state #23
- [term 2:REDUCE(with prod 17)] [term 8:REDUCE(with prod 17)]
+ [term 6:SHIFT(to state 10)] [term 7:SHIFT(to state 11)]
+ [term 11:SHIFT(to state 14)] [term 12:SHIFT(to state 13)]
+ [term 14:SHIFT(to state 24)] [term 18:SHIFT(to state 15)]
 From state #24
- [term 2:REDUCE(with prod 12)]
+ [term 2:REDUCE(with prod 15)]
 From state #25
- [term 8:SHIFT(to state 26)]
+ [term 2:REDUCE(with prod 19)] [term 10:REDUCE(with prod 19)]
 From state #26
- [term 12:REDUCE(with prod 9)] [term 15:REDUCE(with prod 9)]
+ [term 2:REDUCE(with prod 14)]
 From state #27
- [term 12:SHIFT(to state 29)] [term 15:SHIFT(to state 30)]
+ [term 10:SHIFT(to state 28)]
 From state #28
- [term 2:SHIFT(to state 31)]
+ [term 14:REDUCE(with prod 11)] [term 17:REDUCE(with prod 11)]
 From state #29
- [term 2:REDUCE(with prod 11)]
+ [term 14:SHIFT(to state 31)] [term 17:SHIFT(to state 32)]
 From state #30
- [term 2:REDUCE(with prod 18)]
+ [term 2:SHIFT(to state 33)]
 From state #31
- [term 12:REDUCE(with prod 10)] [term 15:REDUCE(with prod 10)]
+ [term 2:REDUCE(with prod 13)]
 From state #32
- [term 4:SHIFT(to state 8)] [term 5:SHIFT(to state 9)]
- [term 9:SHIFT(to state 11)] [term 10:SHIFT(to state 12)]
- [term 12:SHIFT(to state 33)] [term 16:SHIFT(to state 13)]
+ [term 2:REDUCE(with prod 20)]
 From state #33
- [term 2:REDUCE(with prod 5)]
+ [term 14:REDUCE(with prod 12)] [term 17:REDUCE(with prod 12)]
 From state #34
- [term 0:REDUCE(with prod 2)] [term 2:REDUCE(with prod 2)]
- [term 6:REDUCE(with prod 2)] [term 7:REDUCE(with prod 2)]
- [term 16:REDUCE(with prod 2)]
+ [term 6:SHIFT(to state 10)] [term 7:SHIFT(to state 11)]
+ [term 11:SHIFT(to state 14)] [term 12:SHIFT(to state 13)]
+ [term 14:SHIFT(to state 35)] [term 18:SHIFT(to state 15)]
 From state #35
+ [term 2:REDUCE(with prod 5)]
+From state #36
+ [term 2:REDUCE(with prod 8)]
+From state #37
+ [term 0:REDUCE(with prod 2)] [term 2:REDUCE(with prod 2)]
+ [term 4:REDUCE(with prod 2)] [term 5:REDUCE(with prod 2)]
+ [term 8:REDUCE(with prod 2)] [term 9:REDUCE(with prod 2)]
+ [term 18:REDUCE(with prod 2)]
+From state #38
+ [term 2:REDUCE(with prod 7)]
+From state #39
  [term 2:REDUCE(with prod 4)]
 ------------------------------
 -------- REDUCE_TABLE --------
 From state #0
  [non term 0->state 1]
 From state #1
- [non term 1->state 3]
+ [non term 1->state 4]
 From state #2
- [non term 4->state 35]
+ [non term 4->state 39]
 From state #3
+ [non term 5->state 38]
 From state #4
 From state #5
- [non term 2->state 32]
+ [non term 5->state 36]
 From state #6
 From state #7
- [non term 4->state 10]
+ [non term 2->state 34]
 From state #8
- [non term 6->state 25]
 From state #9
- [non term 6->state 24]
+ [non term 4->state 12]
 From state #10
+ [non term 6->state 27]
 From state #11
- [non term 2->state 21]
+ [non term 6->state 26]
 From state #12
- [non term 5->state 15]
 From state #13
+ [non term 5->state 21]
 From state #14
+ [non term 2->state 16]
 From state #15
 From state #16
- [non term 2->state 17]
+ [non term 4->state 17]
 From state #17
- [non term 4->state 18]
 From state #18
 From state #19
 From state #20
 From state #21
- [non term 4->state 18]
 From state #22
+ [non term 2->state 23]
 From state #23
+ [non term 4->state 17]
 From state #24
 From state #25
 From state #26
- [non term 3->state 27]
 From state #27
- [non term 7->state 28]
 From state #28
+ [non term 3->state 29]
 From state #29
+ [non term 7->state 30]
 From state #30
 From state #31
 From state #32
- [non term 4->state 18]
 From state #33
 From state #34
+ [non term 4->state 17]
 From state #35
+From state #36
+From state #37
+From state #38
+From state #39
 -----------------------------

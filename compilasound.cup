@@ -43,6 +43,7 @@ parser code {:
 
 terminal TERM;
 terminal EQUAL;
+terminal NOTE_DURATION, NOTE_VELOCITY;
 terminal LOAD, IMPORT, PLAY;
 terminal PLAY_SIMULT;
 terminal WITH_NOTES;
@@ -71,6 +72,8 @@ Instruction ::=
 			|	PLAY Expr:e							{: print("play"); soundPlayer.playSound(e); :}
 			|	PLAY_SIMULT SoundList:l END			{: print("play_simult"); soundPlayer.playSoundSimult(l); :}
 			|	VARIABLE:n EQUAL Expr:v				{: print("affectation"); setValue(n, v); :}
+			|	NOTE_DURATION Int:d					{: print("note_duration"); soundPlayer.setNoteDuration(d); :}
+			|	NOTE_VELOCITY Int:v					{: print("note_velocity"); soundPlayer.setSoundVelocity(v); :}
 			;
 			
 SoundList	::=										{: print("create list sound"); RESULT = soundFactory.createListSounds(); :}

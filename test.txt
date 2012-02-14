@@ -47,6 +47,8 @@ play_simult
 	seq;
 end;
 
+note_duration 250;
+
 loop = repeat 3 times
 	piano;
 	blank;

@@ -28,4 +28,12 @@ public class SoundPlayer {
 			Thread.sleep((long) (Math.ceil(maxDuration) * 1000));
 		} catch (Exception e) { }
 	}
+	
+	public void setNoteDuration(int duration) {
+		AbstractSound.setNoteDuration(duration);
+	}
+	
+	public void setSoundVelocity(int velocity) {
+		AbstractSound.setSoundVelocity(velocity);
+	}
 }

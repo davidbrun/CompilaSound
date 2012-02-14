@@ -16,6 +16,9 @@
 
 "="							{ return getSymbolFactory().newSymbol ("EQUAL", Sym.EQUAL); }
 
+"note_duration"				{ return getSymbolFactory().newSymbol ("NOTE_DURATION", Sym.NOTE_DURATION); }
+"note_velocity"				{ return getSymbolFactory().newSymbol ("NOTE_VELOCITY", Sym.NOTE_VELOCITY); }
+
 "import"					{ return getSymbolFactory().newSymbol ("IMPORT", Sym.IMPORT); }
 "play"						{ return getSymbolFactory().newSymbol ("PLAY", Sym.PLAY); }
 
