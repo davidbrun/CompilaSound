@@ -20,6 +20,8 @@ parser code {:
         System.exit(1);
     }
 	
+	private SoundFactory soundFactory = new SoundFactory();
+	private SoundPlayer soundPlayer = new SoundPlayer();
 	private Map<String, AbstractSound> variables = new HashMap<String, AbstractSound> ();
 	
 	public void setValue (String name, AbstractSound value) {
@@ -31,55 +33,6 @@ parser code {:
 		if (variables.containsKey(name))
 			value = variables.get(name);
 		return value;
-	}
-	
-	public AbstractSound createSoundMidi(String instrumentName, List<String> notes) {
-		return new SoundMidi(instrumentName.replace("#", " ").replace("\"", ""), notes);
-	}
-
-	public AbstractSound createSoundFile(String filename) {
-		return new SoundFile(filename.replace("\"", ""));
-	}
-	
-	public List<AbstractSound> createListSounds() {
-		return new ArrayList<AbstractSound>();
-	}
-	
-	public List<String> createListNotes() {
-		return new ArrayList<String>();
-	}
-	
-	public SoundSequence createSoundSequence(List<AbstractSound> listSounds) {
-		return new SoundSequence(listSounds);
-	}
-	
-	public SoundLoop createSoundLoop(int repeatTimes, List<AbstractSound> listSounds) {
-		return new SoundLoop(repeatTimes, listSounds);
-	}
-	
-	public void playSound(AbstractSound sound) {
-		sound.playSound();
-	}
-	
-	public void playSoundSimult(List<AbstractSound> listSounds) {
-		double maxDuration = 0;
-		
-		for (AbstractSound sound : listSounds)
-		{
-			final AbstractSound s = sound;
-			
-			maxDuration = Math.max(maxDuration, s.getSoundDuration());
-			
-			new Thread() {
-				public void run() {
-					s.playSound();
-				}
-			}.start();
-		}
-		
-		try {
-			Thread.sleep((long) (Math.ceil(maxDuration) * 1000));
-		} catch (Exception e) { }
 	}
 	
 	public void print(String s) {
@@ -115,23 +68,23 @@ Instructions::=
 			;
 			
 Instruction ::=	
-			|	PLAY Expr:e							{: print("play"); playSound(e); :}
-			|	PLAY_SIMULT SoundList:l END			{: print("play_simult"); playSoundSimult(l); :}
+			|	PLAY Expr:e							{: print("play"); soundPlayer.playSound(e); :}
+			|	PLAY_SIMULT SoundList:l END			{: print("play_simult"); soundPlayer.playSoundSimult(l); :}
 			|	VARIABLE:n EQUAL Expr:v				{: print("affectation"); setValue(n, v); :}
 			;
 			
-SoundList	::=										{: print("create list sound"); RESULT = createListSounds(); :}
+SoundList	::=										{: print("create list sound"); RESULT = soundFactory.createListSounds(); :}
 			|	SoundList:l Expr:e TERM				{: print("list sound add elements"); RESULT = l; if (e != null) l.add(e); :}
 			;
 			
-NoteList	::=										{: print("create list string"); RESULT = createListNotes(); :}
+NoteList	::=										{: print("create list string"); RESULT = soundFactory.createListNotes(); :}
 			|	NoteList:l Note:n TERM				{: print("list string add elements"); RESULT = l; if (n != null) l.add(n); :}
 			;
 			
-Expr        ::= LOAD Str:s WITH_NOTES NoteList:l END{: print("load"); RESULT = createSoundMidi(s, l); :}
-			|	IMPORT Str:s						{: print("import"); RESULT = createSoundFile(s); :}
-			|	REPEAT Int:c TIMES SoundList:l END	{: print("repeat"); RESULT = createSoundLoop(c, l); :}
-			|	SEQUENCE SoundList:l END			{: print("sequence"); RESULT = createSoundSequence(l); :}
+Expr        ::= LOAD Str:s WITH_NOTES NoteList:l END{: print("load"); RESULT = soundFactory.createSoundMidi(s, l); :}
+			|	IMPORT Str:s						{: print("import"); RESULT = soundFactory.createSoundFile(s); :}
+			|	REPEAT Int:c TIMES SoundList:l END	{: print("repeat"); RESULT = soundFactory.createSoundLoop(c, l); :}
+			|	SEQUENCE SoundList:l END			{: print("sequence"); RESULT = soundFactory.createSoundSequence(l); :}
 			|	VARIABLE:n							{: print("variable"); RESULT = getValue(n); :}
 			;
 			
