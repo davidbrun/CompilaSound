@@ -1,0 +1,19 @@
+sound0 = import "audio/22-new.aif";
+sound1 = import "audio/destMouse_Peru.AIF";
+
+seq = sequence
+	sound0;
+	sound1;
+end;
+
+play seq;
+
+play_simult
+	sound0;
+	sound1;
+end;
+
+play import audio/1-welcome.wav;
+
+sound2 = import audio/trippygaia1.mid;
+play sound2;

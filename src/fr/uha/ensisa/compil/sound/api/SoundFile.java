@@ -48,6 +48,7 @@ public class SoundFile extends AbstractSound {
 	 * 
 	 * @return The duration of this sound in seconds
 	 */
+	@Override
 	public double getSoundDuration() {
 		return this.songDuration;
 	}

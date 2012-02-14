@@ -1,12 +1,55 @@
-2+4
-5*(6-3)+1
-6/3*5+20
-4*76/31
-a=10
-a
-b=20
-b
-c=a*b+b
-c
-d=c/a
-d
+open_hi_hat = load "Open#Hi-hat" with_notes
+	A;
+	B;
+	C;
+	D;
+	E;
+	F;
+	G;
+end;
+
+piano = load "Piano" with_notes
+	A;
+	B;
+	C;
+	D;
+	E;
+	F;
+	G;
+end;
+
+play piano;
+
+pianoA = load "Piano" with_notes A; end;
+pianoB = load "Piano" with_notes B; end;
+pianoC = load "Piano" with_notes C; end;
+pianoD = load "Piano" with_notes D; end;
+pianoE = load "Piano" with_notes E; end;
+pianoF = load "Piano" with_notes F; end;
+pianoG = load "Piano" with_notes G; end;
+blank = load "Piano" with_notes Z; end;
+
+seq = sequence
+	piano;
+	blank;
+	pianoG;
+	pianoF;
+	pianoE;
+	pianoD;
+	pianoC;
+	pianoB;
+	pianoA;
+end;
+
+play_simult
+	piano;
+	open_hi_hat;
+	seq;
+end;
+
+loop = repeat 3 times
+	piano;
+	blank;
+end;
+
+play loop;

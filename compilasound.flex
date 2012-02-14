@@ -8,17 +8,31 @@
 %cup
 
 %%
-[ \t\f]					{ }
-\r\n|\r|\n				{ return getSymbolFactory().newSymbol ("EOLN", Sym.EOLN); }
-"="						{ return getSymbolFactory().newSymbol ("EQUAL", Sym.EQUAL); }
-"+"						{ return getSymbolFactory().newSymbol ("PLUS", Sym.PLUS); }
-"-"						{ return getSymbolFactory().newSymbol ("MINUS", Sym.MINUS); }
-"*"						{ return getSymbolFactory().newSymbol ("TIMES", Sym.TIMES); }
-"/"						{ return getSymbolFactory().newSymbol ("DIVIDE", Sym.DIVIDE); }
-"("						{ return getSymbolFactory().newSymbol ("LPAREN", Sym.LPAREN); }
-")"						{ return getSymbolFactory().newSymbol ("RPAREN", Sym.RPAREN); }
-   
-[0-9]+      			{ return getSymbolFactory().newSymbol ("NUMBER", Sym.NUMBER, new Integer(yytext())); }
-[A-Za-z_][A-Za-z_0-9]*	{ return getSymbolFactory().newSymbol ("ID", Sym.ID, new String(yytext())); }
-   
-[^]                    { throw new Error("Illegal character <"+yytext()+">"); }
+
+[ \t\n\r]					{ }
+^#.*						{ }
+
+";"							{ return getSymbolFactory().newSymbol ("TERM", Sym.TERM); }
+
+"="							{ return getSymbolFactory().newSymbol ("EQUAL", Sym.EQUAL); }
+
+"import"					{ return getSymbolFactory().newSymbol ("IMPORT", Sym.IMPORT); }
+"play"						{ return getSymbolFactory().newSymbol ("PLAY", Sym.PLAY); }
+
+"load"						{ return getSymbolFactory().newSymbol ("LOAD", Sym.LOAD); }
+"with_notes"				{ return getSymbolFactory().newSymbol ("WITH_NOTES", Sym.WITH_NOTES); }
+
+"play_simult"				{ return getSymbolFactory().newSymbol ("PLAY_SIMULT", Sym.PLAY_SIMULT); }
+
+"sequence"					{ return getSymbolFactory().newSymbol ("SEQUENCE", Sym.SEQUENCE); }
+
+"repeat"					{ return getSymbolFactory().newSymbol ("REPEAT", Sym.REPEAT); }
+"times"						{ return getSymbolFactory().newSymbol ("TIMES", Sym.TIMES); }
+"end"						{ return getSymbolFactory().newSymbol ("END", Sym.END); }
+
+[0-9]+						{ return getSymbolFactory().newSymbol ("NUMBER", Sym.NUMBER, new Integer(yytext())); }
+[A-Z]						{ return getSymbolFactory().newSymbol ("NOTE", Sym.NOTE, new String(yytext())); }
+[a-zA-Z][a-zA-Z_0-9]*		{ return getSymbolFactory().newSymbol ("VARIABLE", Sym.VARIABLE, new String(yytext())); }
+[a-zA-Z_0-9\.\-\/\"\"#]*	{ return getSymbolFactory().newSymbol ("STRING", Sym.STRING, new String(yytext())); }
+
+[^]							{ throw new Error("Illegal character <"+yytext()+">"); }

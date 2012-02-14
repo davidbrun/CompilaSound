@@ -1,14 +1,17 @@
 package fr.uha.ensisa.compil.sound;
 
-import java.util.TreeMap;
+import fr.uha.ensisa.compil.sound.api.*;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 parser code {:
     
     public void report_error(String message, Object info) {
         StringBuffer m = new StringBuffer("Error");
-		m.append (info.toString());
-        m.append(" : "+message);
+		m.append(info.toString());
+        m.append(" : " + message);
         System.err.println(m.toString());
     }
    
@@ -16,51 +19,127 @@ parser code {:
         report_error(message, info);
         System.exit(1);
     }
-
-	private Map<String, Integer> values = new TreeMap<String, Integer> ();
-
-	public void setValue (String name, int value) {
-		values.put(name, new Integer (value));
+	
+	private Map<String, AbstractSound> variables = new HashMap<String, AbstractSound> ();
+	
+	public void setValue (String name, AbstractSound value) {
+		variables.put(name, value);
 	}
 	
-	public int getValue (String name) {
-		int value = 0;
-		if (values.containsKey(name))
-			value = values.get(name).intValue();
+	public AbstractSound getValue (String name) {
+		AbstractSound value = null;
+		if (variables.containsKey(name))
+			value = variables.get(name);
 		return value;
 	}
+	
+	public AbstractSound createSoundMidi(String instrumentName, List<String> notes) {
+		return new SoundMidi(instrumentName.replace("#", " ").replace("\"", ""), notes);
+	}
 
+	public AbstractSound createSoundFile(String filename) {
+		return new SoundFile(filename.replace("\"", ""));
+	}
+	
+	public List<AbstractSound> createListSounds() {
+		return new ArrayList<AbstractSound>();
+	}
+	
+	public List<String> createListNotes() {
+		return new ArrayList<String>();
+	}
+	
+	public SoundSequence createSoundSequence(List<AbstractSound> listSounds) {
+		return new SoundSequence(listSounds);
+	}
+	
+	public SoundLoop createSoundLoop(int repeatTimes, List<AbstractSound> listSounds) {
+		return new SoundLoop(repeatTimes, listSounds);
+	}
+	
+	public void playSound(AbstractSound sound) {
+		sound.playSound();
+	}
+	
+	public void playSoundSimult(List<AbstractSound> listSounds) {
+		double maxDuration = 0;
+		
+		for (AbstractSound sound : listSounds)
+		{
+			final AbstractSound s = sound;
+			
+			maxDuration = Math.max(maxDuration, s.getSoundDuration());
+			
+			new Thread() {
+				public void run() {
+					s.playSound();
+				}
+			}.start();
+		}
+		
+		try {
+			Thread.sleep((long) (Math.ceil(maxDuration) * 1000));
+		} catch (Exception e) { }
+	}
+	
+	public void print(String s) {
+		System.out.println(s);
+	}
+	
 :}
 
-terminal			EQUAL;
-terminal			PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN;
-terminal			EOLN;
-terminal Integer	NUMBER;
-terminal String		ID;
-terminal			UPLUS, UMINUS;
-   
-nonterminal 		list, instr;
-nonterminal Integer expr;
+terminal TERM;
+terminal EQUAL;
+terminal LOAD, IMPORT, PLAY;
+terminal PLAY_SIMULT;
+terminal WITH_NOTES;
+terminal SEQUENCE;
+terminal REPEAT, TIMES;
+terminal END;
+terminal Integer NUMBER;
+terminal String STRING;
+terminal String NOTE;
+terminal String VARIABLE;
 
-precedence left		PLUS, MINUS;
-precedence left		TIMES, DIVIDE;
-precedence right	UPLUS, UMINUS;
+nonterminal Instructions;
+nonterminal Instruction;
+nonterminal List<AbstractSound> SoundList;
+nonterminal List<String> NoteList;
+nonterminal AbstractSound Expr;
+nonterminal Integer Int;
+nonterminal String Str;
+nonterminal String Note;
 
-list	::=	
-		|	list instr EOLN
-		;
-
-instr	::=	ID:n EQUAL expr:e		{: setValue (n, e); :}
-		|	expr:e					{: System.out.println (e); :}
-		;
-
-expr	::=	expr:e1	PLUS	expr:e2	{: RESULT = e1 + e2; :}
-		|	expr:e1	MINUS	expr:e2	{: RESULT = e1 - e2; :}
-		|	expr:e1	TIMES	expr:e2	{: RESULT = e1 * e2; :}
-		|	expr:e1	DIVIDE	expr:e2	{: RESULT = e1 / e2; :}
-		|	MINUS	expr:e			{: RESULT = - e; :} %prec UMINUS
-		|	PLUS	expr:e			{: RESULT = + e; :} %prec UPLUS
-		|	LPAREN	expr:e	RPAREN	{: RESULT = e; :}
-		|	NUMBER:n				{: RESULT = n; :}
-		|	ID:n					{: RESULT = getValue(n); :}
-		;
+Instructions::=
+			|	Instructions Instruction:inst TERM	{: print("list instructions"); :}
+			;
+			
+Instruction ::=	
+			|	PLAY Expr:e							{: print("play"); playSound(e); :}
+			|	PLAY_SIMULT SoundList:l END			{: print("play_simult"); playSoundSimult(l); :}
+			|	VARIABLE:n EQUAL Expr:v				{: print("affectation"); setValue(n, v); :}
+			;
+			
+SoundList	::=										{: print("create list sound"); RESULT = createListSounds(); :}
+			|	SoundList:l Expr:e TERM				{: print("list sound add elements"); RESULT = l; if (e != null) l.add(e); :}
+			;
+			
+NoteList	::=										{: print("create list string"); RESULT = createListNotes(); :}
+			|	NoteList:l Note:n TERM				{: print("list string add elements"); RESULT = l; if (n != null) l.add(n); :}
+			;
+			
+Expr        ::= LOAD Str:s WITH_NOTES NoteList:l END{: print("load"); RESULT = createSoundMidi(s, l); :}
+			|	IMPORT Str:s						{: print("import"); RESULT = createSoundFile(s); :}
+			|	REPEAT Int:c TIMES SoundList:l END	{: print("repeat"); RESULT = createSoundLoop(c, l); :}
+			|	SEQUENCE SoundList:l END			{: print("sequence"); RESULT = createSoundSequence(l); :}
+			|	VARIABLE:n							{: print("variable"); RESULT = getValue(n); :}
+			;
+			
+Int			::=	NUMBER:n							{: print("number"); RESULT = n; :}
+			;
+			
+Str			::=	STRING:s							{: print("string"); RESULT = s; :}
+			;
+			
+Note		::=	NOTE:n								{: print("note"); RESULT = n; :}
+			;
